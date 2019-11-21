@@ -19,7 +19,7 @@
     "postversion": "git push && git push --tags"
   },
   "files": [
-    "dist/**/*"
+    "lib/**/*"
   ],
   "keywords": [],
   "author": "pablor21@gmail.com",

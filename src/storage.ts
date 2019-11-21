@@ -4,12 +4,7 @@ import * as path from 'path';
 
 export interface IStorageConfig {
   default: string;
-  disks: Array<{
-    name: string;
-    driver?: string;
-    config?: any;
-    root?: string;
-  }>;
+  disks: any;
 }
 
 type ClassType<T> = new (...args: any[]) => T;
@@ -23,11 +18,12 @@ export class StorageManager {
     this.addDriver('local', LocalFileSystem);
 
     this.defaultDiskName = config.default;
-    config.disks.map(d => {
+    Object.keys(config.disks).map(k => {
+      const d = config.disks[k];
       this.addDisk({
         ...config,
         driver: d.driver,
-        name: d.name,
+        name: k,
         root: path.resolve(process.cwd(), d.root || ''),
       });
     });
