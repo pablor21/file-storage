@@ -14,7 +14,7 @@ export interface IStorageConfig {
 
 type ClassType<T> = new (...args: any[]) => T;
 
-export class Storage {
+export class StorageManager {
   public dirvers: Map<string, any> = new Map();
   public disks: Map<string, IDriver> = new Map();
   public defaultDiskName = 'default';

@@ -1,7 +1,7 @@
-import { Storage, LocalFileSystem } from '../src';
+import { StorageManager, LocalFileSystem } from '../src';
 import * as path from 'path';
 
-const storage = new Storage({
+const storage = new StorageManager({
     default: 'default',
     disks: [
         {
