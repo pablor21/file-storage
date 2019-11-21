@@ -6,7 +6,7 @@ const storage = new Storage({
     disks: [
         {
             driver: 'local',
-            root: path.resolve(process.cwd(), 'test_dir'),
+            root: 'test_dir',
             name: 'default',
         }
     ]
