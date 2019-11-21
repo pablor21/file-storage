@@ -149,9 +149,12 @@ export class LocalFileSystem implements IDriver {
   }
 
   public async putFile(filename: string, contents: string | Buffer | Readable): Promise<boolean> {
+    const completeFilename = this.resolvePath(filename);
+    const dir = path.dirname(completeFilename);
+    await fs.ensureDir(dir);
     if (contents instanceof Readable) {
       return new Promise<boolean>((resolve, reject) => {
-        const stream = contents.pipe(fs.createWriteStream(this.resolvePath(filename)));
+        const stream = contents.pipe(fs.createWriteStream(completeFilename));
         stream.on('error', err => {
           reject(err);
         });
@@ -160,10 +163,10 @@ export class LocalFileSystem implements IDriver {
         });
       });
     } else if (contents instanceof Buffer) {
-      await fs.outputFile(this.resolvePath(filename), contents.toString());
+      await fs.outputFile(completeFilename, contents.toString());
       return true;
     } else {
-      await fs.outputFile(this.resolvePath(filename), contents);
+      await fs.outputFile(completeFilename, contents);
       return true;
     }
   }
@@ -177,14 +180,24 @@ export class LocalFileSystem implements IDriver {
   }
 
   public async copyFile(src: string, dest: string): Promise<boolean> {
-    // return await this.putFile(src, (await this.getFileStream(dest)));
-    await fs.copyFile(this.resolvePath(src), this.resolvePath(dest));
+    if (this.fileExists(src)) {
+      const completeFilename = this.resolvePath(dest);
+      const dir = path.dirname(completeFilename);
+      await fs.ensureDir(dir);
+      await fs.copyFile(this.resolvePath(src), completeFilename);
+    }
+
     return true;
   }
 
   public async deleteFile(filename: string): Promise<boolean> {
-    await fs.unlink(this.resolvePath(filename));
-    return true;
+    try {
+      await fs.unlink(this.resolvePath(filename));
+      return true;
+    } catch (ex) {
+      return false;
+    }
+
   }
 
   public async deleteFiles(src: string, pattern: string = ''): Promise<string[]> {

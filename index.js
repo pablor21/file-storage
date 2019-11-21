@@ -1,1 +1,2 @@
-export { lib as default } from './lib';
+const lib = require('./lib');
+module.exports = lib;
