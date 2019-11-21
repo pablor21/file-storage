@@ -197,7 +197,6 @@ export class LocalFileSystem implements IDriver {
     } catch (ex) {
       return false;
     }
-
   }
 
   public async deleteFiles(src: string, pattern: string = ''): Promise<string[]> {
