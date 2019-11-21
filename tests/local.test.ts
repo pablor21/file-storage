@@ -3,13 +3,12 @@ import * as path from 'path';
 
 const storage = new StorageManager({
     default: 'default',
-    disks: [
-        {
+    disks: {
+        'default': {
             driver: 'local',
-            root: 'test_dir',
-            name: 'default',
+            root: 'test_dir'
         }
-    ]
+    }
 });
 
 const disk = storage.disk();
