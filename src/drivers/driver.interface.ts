@@ -1,7 +1,7 @@
-import { FileInfo } from "../fileinfo.type";
+import { IFileInfo } from "../fileinfo.interface";
 import { Readable } from "stream";
 
-export type ListConfig = {
+export interface IListConfig {
     type: "DIRECTORY" | "FILE" | "BOTH",
     recursive?: boolean;
 };
@@ -16,16 +16,16 @@ export interface IDriver {
     moveDirectory(src: string, dest: string): Promise<boolean>;
     copyDirectory(src: string, dest: string): Promise<boolean>;
     directoryExists(dir: string): Promise<boolean>;
-    listDirectories(dir: string, pattern?: string): Promise<FileInfo[]>;
+    listDirectories(dir: string, pattern?: string): Promise<IFileInfo[]>;
     fileExists(dir: string): Promise<boolean>;
     exists(filenameOrDir: string): Promise<string | boolean>;
-    list(dir: string, config?: ListConfig): Promise<FileInfo[]>;
-    listFiles(dir: string, pattern?: string): Promise<FileInfo[]>
+    list(dir: string, config?: IListConfig): Promise<IFileInfo[]>;
+    listFiles(dir: string, pattern?: string): Promise<IFileInfo[]>
     putFile(filename: string, contents: string | Buffer | Readable): Promise<boolean>;
     getFile(filename: string): Promise<Buffer>;
     getFileStream(filename: string): Promise<Readable>;
     copyFile(src: string, dest: string): Promise<boolean>;
     deleteFile(filename: string): Promise<boolean>;
     deleteFiles(src: string, pattern?: string): Promise<string[]>;
-    getFileInfo(dir: string): Promise<FileInfo>;
+    getIFileInfo(dir: string): Promise<IFileInfo>;
 }

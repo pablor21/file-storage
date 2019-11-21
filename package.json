@@ -1,8 +1,12 @@
 {
   "name": "@pablor21/file-storage",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "File storage abstraction",
   "main": "index.js",
+  "repository": {
+    "type": "github",
+    "url": "https://github.com/pablor21/file-storage.git"
+  },
   "scripts": {
     "test": "jest --config jestconfig.json",
     "build": "tsc",

@@ -1,4 +1,4 @@
-export type FileInfo = {
+export interface IFileInfo {
     filename: string,
     path: string,
     mime?: string,

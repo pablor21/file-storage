@@ -1,14 +1,15 @@
 import { IDriver } from "./drivers/driver.interface";
 import { LocalFileSystem } from "./drivers/local.driver";
+import * as path from "path";
 
-export type StorageConfig = {
+export interface IStorageConfig {
     default: string,
-    disks: {
+    disks: Array<{
         name: string,
         driver?: string,
         config?: any,
         root?: string
-    }[];
+    }>;
 }
 
 type ClassType<T> = new (...args: any[]) => T;
@@ -18,26 +19,26 @@ export class Storage {
     public disks: Map<string, IDriver> = new Map();
     public defaultDiskName = 'default';
 
-    constructor(config: StorageConfig) {
+    constructor(config: IStorageConfig) {
         this.addDriver('local', LocalFileSystem);
 
         this.defaultDiskName = config.default;
         config.disks.map(d => {
             this.addDisk({
-                name: d.name,
-                root: d.root,
+                ...config,
                 driver: d.driver,
-                ...config
+                name: d.name,
+                root: path.resolve(process.cwd(), d.root || ''),
             })
         });
 
     }
 
-    factory(Ctor: ClassType<IDriver>, ...args: any[]) {
+    public factory(Ctor: ClassType<IDriver>, ...args: any[]) {
         return new Ctor(...args);
     }
 
-    resolveDriver(name: string): any {
+    public resolveDriver(name: string): any {
         const d = this.dirvers.get(name);
         if (!d) {
             throw new Error(`The driver ${name} is not configured!`);
@@ -45,22 +46,22 @@ export class Storage {
         return d;
     }
 
-    addDriver(name: string, driver: any) {
+    public addDriver(name: string, driver: any) {
         this.dirvers.set('local', driver);
     }
 
-    addDisk(config: any): IDriver | null {
+    public addDisk(config: any): IDriver | null {
         const d = this.resolveDriver(config.driver || 'local');
         const disk = this.factory(d, config);
         this.addDiskWithDriver(config.name, disk);
         return this.disk(config.name);
     }
 
-    addDiskWithDriver(name: string, driver: IDriver) {
+    public addDiskWithDriver(name: string, driver: IDriver) {
         this.disks.set(name, driver);
     }
 
-    disk(name?: string): IDriver {
+    public disk(name?: string): IDriver {
         name = name || this.defaultDiskName;
         const d = this.disks.get(name);
         if (!d) {
