@@ -1,4 +1,3 @@
-
-export * from './fileinfo.interface'
-export * from './storage'
-export * from './drivers'
+export * from './fileinfo.interface';
+export * from './storage';
+export * from './drivers';
