@@ -1,0 +1,1 @@
+export { lib as default } from './lib';

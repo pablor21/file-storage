@@ -19,6 +19,7 @@
     "postversion": "git push && git push --tags"
   },
   "files": [
+    "index.js",
     "lib/**/*"
   ],
   "keywords": [],
