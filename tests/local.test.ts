@@ -6,16 +6,29 @@ const storage = new StorageManager({
     disks: {
         'default': {
             driver: 'local',
-            root: 'test_dir'
+            root: './test_dir'
         }
     }
 });
 
+
 const disk = storage.disk();
-const dir = '/1/2/3';
+const dir = '1/2/3/';
+
 test('Local Driver Instance', () => {
     expect(disk).toBeInstanceOf(LocalFileSystem);
 });
+
+test('Make dir', async () => {
+    await disk.makeDirectory(dir);
+    expect((await disk.directoryExists(dir))).toBe(true);
+})
+
+test('Clean root', async ()=>{
+    await disk.emptyDirectory('/');
+    expect((await disk.list('/'))).toHaveLength(0)
+})
+
 
 test('Make dir', async () => {
     await disk.makeDirectory(dir);
@@ -39,7 +52,7 @@ test('Copy file', async () => {
 
 
 test('List files', async () => {
-    expect(await disk.listFiles(dir)).toHaveLength(3);
+    expect(await disk.listFiles(dir, '/*.*')).toHaveLength(3);
 });
 
 test('List directories', async () => {
@@ -51,7 +64,7 @@ test('List directories recursive', async () => {
 });
 
 test('List all', async () => {
-    expect(await disk.list('/1/2/*/**', { type: "BOTH" })).toHaveLength(4);
+    expect(await disk.list('/1/2')).toHaveLength(4);
 });
 
 test('Remove file', async () => {
