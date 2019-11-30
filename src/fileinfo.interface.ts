@@ -1,5 +1,6 @@
 export interface IFileInfo {
   filename: string;
+  completeFilename: string;
   path: string;
   mime?: string;
   filetype?: string;

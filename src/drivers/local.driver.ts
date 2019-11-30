@@ -45,7 +45,7 @@ export class LocalFileSystem implements IDriver {
     return true;
   }
 
-  public async emptyDirectory(dir: string): Promise<boolean> {
+  public async emptyDirectory(dir: string = ''): Promise<boolean> {
     await fs.emptyDir(this.resolvePath(dir));
     return true;
   }
@@ -69,7 +69,7 @@ export class LocalFileSystem implements IDriver {
   }
 
   public async listDirectories(dir: string, pattern: string = '/*/'): Promise<IFileInfo[]> {
-    return await this.list(dir + pattern, { type: 'DIRECTORY' });
+    return await this.list(dir, pattern, { type: 'DIRECTORY' });
   }
 
   public async fileExists(dir: string): Promise<boolean> {
@@ -91,16 +91,17 @@ export class LocalFileSystem implements IDriver {
   }
 
   public async getIFileInfo(dir: string): Promise<IFileInfo> {
-    dir = this.resolvePath(dir);
-    const stats = await fs.stat(dir);
-    const mimeType = mime.lookup(dir);
-    const fileType = mime.contentType(dir);
+    const resolvedDir = this.resolvePath(dir);
+    const stats = await fs.stat(resolvedDir);
+    const mimeType = mime.lookup(resolvedDir);
+    const fileType = mime.contentType(path.extname(dir));
     const fInfo: IFileInfo = {
       basename: path.basename(dir),
       createdAt: stats.ctime,
       exists: true,
       extension: path.extname(dir),
       filename: dir,
+      completeFilename: resolvedDir,
       filetype: fileType || undefined,
       mime: mimeType || undefined,
       modifiedAt: stats.mtime,
@@ -111,41 +112,58 @@ export class LocalFileSystem implements IDriver {
     return fInfo;
   }
 
-  public async list(dir: string, config: IListConfig = { type: 'BOTH' }): Promise<IFileInfo[]> {
+  public async list(
+    dir: string,
+    pattern: string = '/*/**',
+    config: IListConfig = { type: 'BOTH' },
+  ): Promise<IFileInfo[]> {
+    dir = path.join(dir || '', pattern || '');
+    if (!dir.startsWith('/')) {
+      dir = '/' + dir;
+    }
     const p = await new Promise<IFileInfo[]>(async (resolve, reject) => {
-      await glob(this.resolvePath(dir), async (err, matches) => {
-        if (err) {
-          reject(err);
-        } else {
-          const ret: IFileInfo[] = [];
-          await Promise.all(
-            matches.map(async m => {
-              let valid = true;
-              const fInfo = await this.getIFileInfo(m);
-              switch (config.type) {
-                case 'FILE':
-                  valid = fInfo.type === 'FILE';
-                  break;
-                case 'DIRECTORY':
-                  valid = fInfo.type === 'DIRECTORY';
-                  break;
-                default:
-                  valid = true;
-              }
-              if (valid) {
-                ret.push(fInfo);
-              }
-            }),
-          );
-          resolve(ret);
-        }
-      });
+      await glob(
+        dir,
+        {
+          nomount: true,
+          root: this.resolvePath('/'),
+        },
+        async (err, matches) => {
+          if (err) {
+            reject(err);
+          } else {
+            const ret: IFileInfo[] = [];
+            await Promise.all(
+              matches.map(async m => {
+                if (m !== '/') {
+                  let valid = true;
+                  const fInfo = await this.getIFileInfo(m);
+                  switch (config.type) {
+                    case 'FILE':
+                      valid = fInfo.type === 'FILE';
+                      break;
+                    case 'DIRECTORY':
+                      valid = fInfo.type === 'DIRECTORY';
+                      break;
+                    default:
+                      valid = true;
+                  }
+                  if (valid) {
+                    ret.push(fInfo);
+                  }
+                }
+              }),
+            );
+            resolve(ret);
+          }
+        },
+      );
     });
     return p;
   }
 
-  public async listFiles(dir: string, pattern: string = '/*'): Promise<IFileInfo[]> {
-    return await this.list(dir + pattern, { type: 'FILE' });
+  public async listFiles(dir: string, pattern: string = '*.*'): Promise<IFileInfo[]> {
+    return await this.list(dir, pattern, { type: 'FILE' });
   }
 
   public async putFile(filename: string, contents: string | Buffer | Readable): Promise<boolean> {
@@ -200,7 +218,7 @@ export class LocalFileSystem implements IDriver {
   }
 
   public async deleteFiles(src: string, pattern: string = ''): Promise<string[]> {
-    const files = await this.list(src + pattern, { type: 'FILE' });
+    const files = await this.list(src, pattern, { type: 'FILE' });
     return Promise.all(
       files.map(async f => {
         await this.deleteFile(f.filename);
@@ -214,7 +232,7 @@ export class LocalFileSystem implements IDriver {
       source = source.substr(1);
     }
     if (!source) {
-      return this.config.root;
+      return path.resolve(this.config.root);
     }
     return path.resolve(this.config.root, source);
   }

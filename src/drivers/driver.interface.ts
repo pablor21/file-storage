@@ -19,7 +19,7 @@ export interface IDriver {
   listDirectories(dir: string, pattern?: string): Promise<IFileInfo[]>;
   fileExists(dir: string): Promise<boolean>;
   exists(filenameOrDir: string): Promise<string | boolean>;
-  list(dir: string, config?: IListConfig): Promise<IFileInfo[]>;
+  list(dir: string, pattern?: string, config?: IListConfig): Promise<IFileInfo[]>;
   listFiles(dir: string, pattern?: string): Promise<IFileInfo[]>;
   putFile(filename: string, contents: string | Buffer | Readable): Promise<boolean>;
   getFile(filename: string): Promise<Buffer>;

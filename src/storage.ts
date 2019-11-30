@@ -24,7 +24,7 @@ export class StorageManager {
         ...config,
         driver: d.driver,
         name: k,
-        root: path.resolve(process.cwd(), d.root || ''),
+        root: d.root || '',
       });
     });
   }
