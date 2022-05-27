@@ -26,7 +26,10 @@ export class LocalFileSystem implements IDriver {
 
   public async makeDirectory(dir: string, options: { mode: '0777' }): Promise<boolean> {
     try {
-      await fs.mkdirs(this.resolvePath(dir));
+      await /* TODO: JSFIX could not patch the breaking change:
+      Creating a directory with fs-extra no longer returns the path 
+      Suggested fix: The returned promise no longer includes the path of the new directory */
+      fs.mkdirs(this.resolvePath(dir));
       return true;
     } catch (ex) {
       if (ex.code === 'EEXIST') {
@@ -169,7 +172,10 @@ export class LocalFileSystem implements IDriver {
   public async putFile(filename: string, contents: string | Buffer | Readable): Promise<boolean> {
     const completeFilename = this.resolvePath(filename);
     const dir = path.dirname(completeFilename);
-    await fs.ensureDir(dir);
+    await /* TODO: JSFIX could not patch the breaking change:
+    Creating a directory with fs-extra no longer returns the path 
+    Suggested fix: The returned promise no longer includes the path of the new directory */
+    fs.ensureDir(dir);
     if (contents instanceof Readable) {
       return new Promise<boolean>((resolve, reject) => {
         const stream = contents.pipe(fs.createWriteStream(completeFilename));
@@ -201,7 +207,10 @@ export class LocalFileSystem implements IDriver {
     if (this.fileExists(src)) {
       const completeFilename = this.resolvePath(dest);
       const dir = path.dirname(completeFilename);
-      await fs.ensureDir(dir);
+      await /* TODO: JSFIX could not patch the breaking change:
+      Creating a directory with fs-extra no longer returns the path 
+      Suggested fix: The returned promise no longer includes the path of the new directory */
+      fs.ensureDir(dir);
       await fs.copyFile(this.resolvePath(src), completeFilename);
     }
 
